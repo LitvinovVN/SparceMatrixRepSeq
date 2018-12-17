@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SparseMatrixRepSeq", "SparseMatrixRepSeq\SparseMatrixRepSeq.csproj", "{03E2AA06-F083-4483-86C9-014DA309818F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SparseMatrixRepSeqConsoleApp", "SparseMatrixRepSeqConsoleApp\SparseMatrixRepSeqConsoleApp.csproj", "{B49DD09C-C4AD-485B-ABC5-9F85F1F75B90}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{03E2AA06-F083-4483-86C9-014DA309818F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03E2AA06-F083-4483-86C9-014DA309818F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03E2AA06-F083-4483-86C9-014DA309818F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B49DD09C-C4AD-485B-ABC5-9F85F1F75B90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B49DD09C-C4AD-485B-ABC5-9F85F1F75B90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B49DD09C-C4AD-485B-ABC5-9F85F1F75B90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B49DD09C-C4AD-485B-ABC5-9F85F1F75B90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
