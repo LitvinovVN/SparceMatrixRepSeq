@@ -145,6 +145,21 @@ namespace SparseMatrixRepSeqNamespace
         }
 
         /// <summary>
+        /// Очищает файл с индексами первых элементов строк
+        /// (стирает имеющийся файл и создаёт новый)
+        /// </summary>
+        /// <returns></returns>
+        public void ClearRowIndexFile()
+        {
+            _fileStreamRowIndex.Close();
+            File.Delete(GetPathToRowIndexFile);
+            _fileStreamRowIndex = new FileStream(GetPathToDataFile,
+                              FileMode.OpenOrCreate,
+                              FileAccess.ReadWrite,
+                              FileShare.Read);
+        }
+
+        /// <summary>
         /// Освобождение ресурсов
         /// </summary>
         public void Dispose()
@@ -175,7 +190,7 @@ namespace SparseMatrixRepSeqNamespace
             }
             int result = Converters.ConvertByteArrayToInt(bytes);
             return result;
-        }        
+        }               
 
         /// <summary>
         /// Возвращает количество элементов в указанной строке
@@ -376,8 +391,63 @@ namespace SparseMatrixRepSeqNamespace
             }
             double result = Converters.ConvertByteArrayToDouble(bytes);
             return result;
-        }           
+        }
 
-        
+        /// <summary>
+        /// Удаляет элемент по указанному индексу
+        /// из файла с данными
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public async Task RemoveDataAsync(int index)
+        {
+            await RemoveElementFromFileAsync(_fileStreamData, index, 1, SIZE_OF_DATA_ELEMENT);
+        }
+
+        /// <summary>
+        /// Удаляет элемент данных по указанному индексу
+        /// </summary>
+        /// <param name="_fileStream"></param>
+        /// <param name="index"></param>
+        /// <param name="numRemovingElements"></param>
+        /// <param name="numBytesOfElement">Число байт, отводимое на один элемент</param>
+        /// <returns></returns>
+        private async Task RemoveElementFromFileAsync(FileStream _fileStream, int index, int numRemovingElements, int numBytesOfElement)
+        {
+            // 1. Выделяем память для хранения оставляемых данных
+            //           V = 2              Length = 6
+            // | 0 | 1 | 2 | 3 | 4 | 5 |
+            // | 0 | 1 | 3 | 4 | 5 |
+            //         | Length - V = 6 - 2 - 1 = 3
+            byte[] bytes = new byte[(GetNumElementsInDataFile - index - numRemovingElements) * numBytesOfElement];
+                       
+
+            // 2. Считываем из файла данные, которые остаются, начиная с индекса вставки + кол-во удаляемых элементов            
+            try
+            {
+                int offset = (index + numRemovingElements) * numBytesOfElement;
+                long p = _fileStream.Seek(offset, SeekOrigin.Begin);
+                int res = await _fileStream.ReadAsync(bytes, 0, bytes.Length);
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine("Exception. _fileStream.ReadAsync");
+            }
+
+            // 3. Записываем сформированный массив байт в файл, начиная с указанного индекса            
+            try
+            {
+                int offset = index * numBytesOfElement;
+                long p = _fileStream.Seek(offset, SeekOrigin.Begin);
+                await _fileStream.WriteAsync(bytes, 0, bytes.Length);
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine("Exception. _fileStream.WriteAsync");
+            }
+
+            // 4. Удаляем оставшиеся данные в конце файла
+            _fileStream.SetLength( _fileStream.Length - numRemovingElements * numBytesOfElement);
+        }
     }
 }

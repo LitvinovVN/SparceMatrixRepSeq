@@ -40,6 +40,7 @@ namespace SparseMatrixRepSeqConsoleApp
             Console.WriteLine("6. Перезапись элементов данных в указанных позициях");
             Console.WriteLine("7. Вставка элемента данных в указанную позицию");
             Console.WriteLine("8. Вставка набора данных в указанную позицию");
+            Console.WriteLine("9. Удаление элемента с указанным индексом из файла с данными");
         }
         
         static void Main(string[] args)
@@ -103,10 +104,84 @@ namespace SparseMatrixRepSeqConsoleApp
                         InsertElementsInDataFileByIndexAsync();
                         Console.ReadKey(false);
                         break;
+                    case "9":
+                        RemoveElementInDataFileByIndexAsync();
+                        Console.ReadKey(false);
+                        break;
                     default:
                         break;
                 }
                 
+            }
+        }
+
+        /// <summary>
+        /// Удаляет элемент с указанным индексом из файла с данными
+        /// </summary>
+        private static async Task RemoveElementInDataFileByIndexAsync()
+        {
+            using (SparseMatrixRepSeq sparseMatrixRepSeq = new SparseMatrixRepSeq("9"))
+            {
+                if (sparseMatrixRepSeq.GetNumElementsInDataFile > 0)
+                {
+                    Console.WriteLine($"Очистка массива...");
+                    sparseMatrixRepSeq.ClearDataFile();
+                }
+
+                Console.WriteLine($"Создание массива...");
+                for (int i = 0; i < 10; i++)
+                {
+                    int data = i * 2;
+                    await sparseMatrixRepSeq.WriteDataAsync(data);
+                    Console.WriteLine($"{i}: {data}");
+                }
+
+                Console.WriteLine($"До удаления:");
+                for (int i = 0; i < sparseMatrixRepSeq.GetNumElementsInDataFile; i++)
+                {
+                    double readedElement = await sparseMatrixRepSeq.ReadDataAsync(i);
+                    Console.WriteLine($"{i}: {readedElement}");
+                }
+
+                Console.WriteLine($"Удаление элемента 0:");                
+                await sparseMatrixRepSeq.RemoveDataAsync(0);
+
+                Console.WriteLine($"После удаления:");
+                for (int i = 0; i < sparseMatrixRepSeq.GetNumElementsInDataFile; i++)
+                {
+                    double readedElement = await sparseMatrixRepSeq.ReadDataAsync(i);
+                    Console.WriteLine($"{i}: {readedElement}");
+                }
+
+                Console.WriteLine($"Удаление элемента 2:");
+                await sparseMatrixRepSeq.RemoveDataAsync(2);
+
+                Console.WriteLine($"После удаления:");
+                for (int i = 0; i < sparseMatrixRepSeq.GetNumElementsInDataFile; i++)
+                {
+                    double readedElement = await sparseMatrixRepSeq.ReadDataAsync(i);
+                    Console.WriteLine($"{i}: {readedElement}");
+                }
+
+                Console.WriteLine($"Удаление элемента 7:");
+                await sparseMatrixRepSeq.RemoveDataAsync(7);
+
+                Console.WriteLine($"После удаления:");
+                for (int i = 0; i < sparseMatrixRepSeq.GetNumElementsInDataFile; i++)
+                {
+                    double readedElement = await sparseMatrixRepSeq.ReadDataAsync(i);
+                    Console.WriteLine($"{i}: {readedElement}");
+                }
+
+                Console.WriteLine($"Удаление несуществующего элемента 77:");
+                await sparseMatrixRepSeq.RemoveDataAsync(77);
+
+                Console.WriteLine($"После удаления:");
+                for (int i = 0; i < sparseMatrixRepSeq.GetNumElementsInDataFile; i++)
+                {
+                    double readedElement = await sparseMatrixRepSeq.ReadDataAsync(i);
+                    Console.WriteLine($"{i}: {readedElement}");
+                }
             }
         }
 
