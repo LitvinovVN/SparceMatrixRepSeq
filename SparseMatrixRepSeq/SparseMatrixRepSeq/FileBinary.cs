@@ -116,6 +116,17 @@ namespace SparseMatrixRepSeqNamespace
             byte[] result = await ReadAsync(index, 1);
             return result;
         }
+
+        /// <summary>
+        /// Считывает все данные из файла
+        /// </summary>
+        /// <param name="index">Позиция считываемого элемента</param>
+        /// <returns></returns>
+        public async Task<byte[]> ReadAsync()
+        {            
+            byte[] result = await ReadAsync(0, (int)GetNumElementsInFile);
+            return result;
+        }
         #endregion
 
         #region Добавление данных

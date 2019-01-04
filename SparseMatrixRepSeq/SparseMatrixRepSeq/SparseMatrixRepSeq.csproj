@@ -4,4 +4,10 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ManagedCuda-CUSOLVE.NETStandard" Version="9.1.300" />
+    <PackageReference Include="ManagedCuda-CUSPARSE.NETStandard" Version="9.1.300" />
+    <PackageReference Include="ManagedCuda.NETStandard" Version="9.1.300" />
+  </ItemGroup>
+
 </Project>

@@ -48,8 +48,19 @@ namespace SparseMatrixRepSeqNamespace
             double result = Converters.ConvertByteArrayToDouble(bytes);
             return result;
         }
+
+        /// <summary>
+        /// Считывает все данные из указанного файла
+        /// </summary>        
+        /// <returns></returns>
+        public new async Task<double[]> ReadAsync()
+        {
+            var bytes = await base.ReadAsync();
+            double[] result = Converters.ConvertByteArrayToDoubleArray(bytes);
+            return result;
+        }
         #endregion
-        
+
         #region Добавление данных
         /// <summary>
         /// Записывает один элемент данных в конец файла

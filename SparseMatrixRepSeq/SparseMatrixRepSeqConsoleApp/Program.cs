@@ -1,5 +1,6 @@
 ﻿using SparseMatrixRepSeqNamespace;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -7,6 +8,8 @@ namespace SparseMatrixRepSeqConsoleApp
 {
     class Program
     {
+        static Stopwatch sWatch = new Stopwatch();
+
         protected static void consoleCancelEvent(object sender, ConsoleCancelEventArgs args)
         {
             Console.WriteLine("\nThe read operation has been interrupted.");
@@ -34,7 +37,14 @@ namespace SparseMatrixRepSeqConsoleApp
 
             Console.WriteLine("1. Тестирование класса FileBinaryDouble");
             Console.WriteLine("2. Тестирование класса FileBinaryInt");
-            Console.WriteLine("3. Создание пустой матрицы");            
+            Console.WriteLine("3. Создание пустой матрицы");
+            Console.WriteLine("4. Запросы на поиск элементов и групп элементов");
+            Console.WriteLine("5. Работа с последовательностями элементов");
+            Console.WriteLine("6. Добавление последовательностей элементов в массив");
+            Console.WriteLine("7. Работа с ленточными последовательностями элементов");
+            Console.WriteLine("8. Добавление ленточных последовательностей элементов в массив");
+            Console.WriteLine("9. Создание комбинированной матрицы");
+            Console.WriteLine("10. Создание СЛАУ");
         }
         
         static void Main(string[] args)
@@ -78,13 +88,42 @@ namespace SparseMatrixRepSeqConsoleApp
                         CreateSparceMatrixRepSeqWith0Elements();
                         Console.ReadKey(false);
                         break;
+                    case "4":
+                        GetElementTests();
+                        Console.ReadKey(false);
+                        break;
+                    case "5":
+                        DataSequencesTests();
+                        Console.ReadKey(false);
+                        break;
+                    case "6":
+                        DataSequenceAddRowsTests();
+                        Console.ReadKey(false);
+                        break;
+                    case "7":
+                        DataSequencesBandTests();
+                        Console.ReadKey(false);
+                        break;
+                    case "8":
+                        DataSequenceBandAddRowsTests();
+                        Console.ReadKey(false);
+                        break;
+                    case "9":
+                        SparseMatrixRepSeqCreateAndReadTests();
+                        Console.ReadKey(false);
+                        break;
+                    case "10":
+                        SlaeCreateAndReadTests();
+                        Console.ReadKey(false);
+                        break;
                     default:
                         break;
+                    
                 }
                 
             }
         }
-               
+                
 
         /// <summary>
         /// 1. Тестирование класса FileBinaryDouble
@@ -419,17 +458,531 @@ namespace SparseMatrixRepSeqConsoleApp
         }
 
         /// <summary>
-        /// 3. Тестирование класса FileBinaryDouble
+        /// 3. Тестирование класса SparseMatrixRepSeq
         /// </summary>
-        private static void CreateSparceMatrixRepSeqWith0Elements()
+        private static async Task CreateSparceMatrixRepSeqWith0Elements()
         {
-            SparseMatrixRepSeq sparseMatrixRepSeq = new SparseMatrixRepSeq("1");
+            using (SparseMatrixRepSeq sparseMatrixRepSeq = new SparseMatrixRepSeq("3"))
+            {
+                Console.WriteLine(sparseMatrixRepSeq.ToString());
+                Console.WriteLine(sparseMatrixRepSeq.GetPathToDescriptionFile);
+                Console.WriteLine(sparseMatrixRepSeq.GetPathToDataFile);
+                Console.WriteLine(sparseMatrixRepSeq.GetPathToRowIndexFile);
+                Console.WriteLine(sparseMatrixRepSeq.GetPathToColIndexFile);
 
-            Console.WriteLine(sparseMatrixRepSeq.ToString());
-            Console.WriteLine(sparseMatrixRepSeq.GetPathToDataFile);
+                // 0. Очистка матрицы
+                Console.WriteLine("0. Очистка матрицы");
+                await sparseMatrixRepSeq.ClearAsync();
+                await sparseMatrixRepSeq.PrintMatrixDescription();
+                Console.WriteLine();
+
+                #region Добавление отдельных строк
+
+                // Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+                Console.WriteLine("Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |");
+                // Добавление строки index:              0    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+                //                   value:              0    | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+                await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+                await sparseMatrixRepSeq.PrintMatrixDescription();
+                await sparseMatrixRepSeq.PrintRowsFromNnzSeparateElements();
+                Console.WriteLine();
+
+                // Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+                Console.WriteLine("Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |");
+                // Добавление строки index:              0    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+                //                   value:              0    | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+                await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+                await sparseMatrixRepSeq.PrintMatrixDescription();
+                await sparseMatrixRepSeq.PrintRowsFromNnzSeparateElements();
+                Console.WriteLine();
+
+                // Добавление строки  | 0.11 | 1.11 | 2.22 | 0 | 0 | -5.55 | 0 | 0 | -8.88 | -9.99 |
+                Console.WriteLine("1. Добавление строки  | 0.11 | 1.11 | 2.22 | 0 | 0 | -5.55 | 0 | 0 | -8.88 | -9.99 |");
+                // Добавление строки index:              0    | 1    | 2    | 3 | 4 |  5    | 6 | 7 |  8    |  9    |
+                //                   value:              0.11 | 1.11 | 2.22 | 0 | 0 | -5.55 | 0 | 0 | -8.88 | -9.99 |
+                await sparseMatrixRepSeq.AddRowAsync(new double[] { 0.11 , 1.11 , 2.22 , 0 , 0 , -5.55 , 0 , 0 , -8.88 , -9.99 });
+                await sparseMatrixRepSeq.PrintMatrixDescription();
+                await sparseMatrixRepSeq.PrintRowsFromNnzSeparateElements();
+                Console.WriteLine();
+
+                // Добавление строки  | 0 | 0 | 2.55 | 0 | -1000 | 0 | 50.0001 | 0 | 0 | 0 |
+                Console.WriteLine("Добавление строки  | 0 | 0 | 2.55 | 0 | -1000 | 0 | 50.01 | 0 | 0 | 0 |");
+                // Добавление строки index:              0    | 1    | 2    | 3 | 4     | 5   |       6 | 7 | 8 | 9 |
+                //                   value:              0    | 0    | 2.55 | 0 | -1000 | 0   | 50.01 | 0 | 0 | 0 |
+                await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 0, 2.55, 0, -1000, 0, 50.01, 0, 0, 0 });
+                await sparseMatrixRepSeq.PrintMatrixDescription();
+                await sparseMatrixRepSeq.PrintRowsFromNnzSeparateElements();
+                Console.WriteLine();
+
+                // Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+                Console.WriteLine("Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |");
+                // Добавление строки index:              0    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+                //                   value:              0    | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+                await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+                await sparseMatrixRepSeq.PrintMatrixDescription();
+                await sparseMatrixRepSeq.PrintRowsFromNnzSeparateElements();
+                Console.WriteLine();
+
+                
+                // Добавление строки  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+                Console.WriteLine("Добавление строки  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |");
+                // Добавление строки index:              | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+                //                   value:              | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+                await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
+                await sparseMatrixRepSeq.PrintMatrixDescription();
+                await sparseMatrixRepSeq.PrintRowsFromNnzSeparateElements();
+                Console.WriteLine();
+
+                sWatch.Start();
+                int N = 100;
+                for(int i=0;i<N;i++)
+                {
+                    await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+                }
+                sWatch.Stop();
+                Console.WriteLine($"Время добавления {N} строк с 10 ненулевыми элементами: { sWatch.ElapsedMilliseconds.ToString()} мс");
+
+                sWatch.Start();
+                N = 100;
+                for (int i = 0; i < N; i++)
+                {
+                    await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+                }
+                sWatch.Stop();
+                Console.WriteLine($"Время добавления {N} строк с 20 ненулевыми элементами: { sWatch.ElapsedMilliseconds.ToString()} мс");
+
+                sWatch.Restart();
+                N = 1000;                
+                for (int i = 0; i < N; i++)
+                {
+                    await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
+                }
+                sWatch.Stop();
+                Console.WriteLine($"Время добавления {N} строк: { sWatch.ElapsedMilliseconds.ToString()} мс");
+                #endregion
+            }
+
         }
-               
 
-        
+        /// <summary>
+        /// 4. Запросы на поиск элементов и групп элементов
+        /// </summary>
+        private static async Task GetElementTests()
+        {
+            using (SparseMatrixRepSeq sparseMatrixRepSeq = new SparseMatrixRepSeq("4"))
+            {
+                sparseMatrixRepSeq.PrintMatrixFileNames();
+
+                #region Добавление отдельных строк
+
+                await CreateTestMatrix(sparseMatrixRepSeq);
+                
+                await GetElementAsyncTest(sparseMatrixRepSeq, 0, 0);
+                await GetElementAsyncTest(sparseMatrixRepSeq, -1, 0);
+                await GetElementAsyncTest(sparseMatrixRepSeq, 0, 100);
+                await GetElementAsyncTest(sparseMatrixRepSeq, 1, 5);
+                await GetElementAsyncTest(sparseMatrixRepSeq, 2, 5);
+                await GetElementAsyncTest(sparseMatrixRepSeq, 5, 0);
+                await GetElementAsyncTest(sparseMatrixRepSeq, 5, 5);
+                await GetElementAsyncTest(sparseMatrixRepSeq, 5, 11);
+                await GetElementAsyncTest(sparseMatrixRepSeq, 5, 12);
+                #endregion
+            }
+        }
+
+        /// <summary>
+        /// 5. Работа с последовательностями элементов
+        /// </summary>
+        private static async Task DataSequencesTests()
+        {
+            using (SparseMatrixRepSeq sparseMatrixRepSeq = new SparseMatrixRepSeq("5"))
+            {
+                await sparseMatrixRepSeq.ClearAsync();
+
+                Console.WriteLine(sparseMatrixRepSeq.GetNumSequences());
+                // Объявляем последовательности элементов
+                double[] seq0 = new double[] { -5.55, 0, 15, 211, 0.09 };
+                double[] seq1 = new double[] { 1.1, 2.2, -0.6 };
+                double[] seq2 = new double[] { 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+                double[] seq3 = new double[] { 1000, 0, 15, 211, 0.09 };
+                double[] seq4 = new double[] { -4.55, 4, 45, 411, 4.09, 43.98, 4, -4, -44.432 };
+                #region Добавление последовательностей
+                Console.WriteLine("Добавление последовательности double[] seq0 = new double[] { -5.55, 0, 15, 211, 0.09 };");
+                int seqIndex0 = await sparseMatrixRepSeq.AddSequence(seq0);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+
+                Console.WriteLine("Добавление последовательности double[] seq1 = new double[] { 1.1, 2.2, -0.6 };");
+                int seqIndex1 = await sparseMatrixRepSeq.AddSequence(seq1);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+
+                Console.WriteLine("Добавление последовательности double[] seq2 = new double[] { 9, 8, 7, 6, 5, 4, 3, 2, 1 };");
+                int seqIndex2 = await sparseMatrixRepSeq.AddSequence(seq2);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+
+                Console.WriteLine("Добавление последовательности double[] seq3 = new double[] { 1000, 0, 15, 211, 0.09 };");
+                int seqIndex3 = await sparseMatrixRepSeq.AddSequence(seq3);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+
+                Console.WriteLine("Добавление последовательности double[] seq4 = new double[] { -4.55, 4, 45, 411, 4.09, 43.98, 4, -4, -44.432 };");
+                int seqIndex4 = await sparseMatrixRepSeq.AddSequence(seq4);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+                #endregion
+
+                #region Добавление координат размещения первых элементов последовательностей
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceCoord(seqIndex0, 0, 5)");
+                int sequenceCoordIndex0   = await sparseMatrixRepSeq.AddSequenceCoord(seqIndex0, 0, 5);
+                await sparseMatrixRepSeq.PrintMatrixSequenceCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceCoord(seqIndex1, 1, 5)");
+                int sequenceCoordIndex1   = await sparseMatrixRepSeq.AddSequenceCoord(seqIndex1, 1, 5);
+                await sparseMatrixRepSeq.PrintMatrixSequenceCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceCoord(seqIndex2, 2, 5)");
+                int sequenceCoordIndex2   = await sparseMatrixRepSeq.AddSequenceCoord(seqIndex2, 2, 5);
+                await sparseMatrixRepSeq.PrintMatrixSequenceCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceCoord(seqIndex3, 3, 5)");
+                int sequenceCoordIndex3   = await sparseMatrixRepSeq.AddSequenceCoord(seqIndex3, 3, 5);
+                await sparseMatrixRepSeq.PrintMatrixSequenceCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceCoord(seqIndex4, 4, 5)");
+                int sequenceCoordIndex4_1 = await sparseMatrixRepSeq.AddSequenceCoord(seqIndex4, 4, 5);
+                await sparseMatrixRepSeq.PrintMatrixSequenceCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceCoord(seqIndex4, 5, 6)");
+                int sequenceCoordIndex4_2 = await sparseMatrixRepSeq.AddSequenceCoord(seqIndex4, 5, 6);
+                await sparseMatrixRepSeq.PrintMatrixSequenceCoordinatesFile();
+                #endregion
+
+                await sparseMatrixRepSeq.SetNumColsAsync(15);
+
+                #region Запрос строк из последовательностей
+                Console.WriteLine("Запрос строки 0");
+                await sparseMatrixRepSeq.PrintRowFromSequence(0);
+                Console.WriteLine("Запрос строки 1");
+                await sparseMatrixRepSeq.PrintRowFromSequence(1);
+                Console.WriteLine("Запрос строки 2");
+                await sparseMatrixRepSeq.PrintRowFromSequence(2);
+                Console.WriteLine("Запрос строки 3");
+                await sparseMatrixRepSeq.PrintRowFromSequence(3);
+                Console.WriteLine("Запрос строки 4");
+                await sparseMatrixRepSeq.PrintRowFromSequence(4);
+                Console.WriteLine("Запрос строки 5");
+                await sparseMatrixRepSeq.PrintRowFromSequence(5);
+                #endregion
+                              
+                
+            }
+            Console.WriteLine("---Successful end of method---");
+        }
+
+        /// <summary>
+        /// 6. Добавление последовательностей элементов в массив
+        /// </summary>
+        private static async Task DataSequenceAddRowsTests()
+        {
+            using (SparseMatrixRepSeq sparseMatrixRepSeq = new SparseMatrixRepSeq("6"))
+            {
+                await sparseMatrixRepSeq.ClearAsync();
+                double[] seq0 = new double[] { -5.55, 0, 15, 211, 0.09 };
+                var tuple0 = await sparseMatrixRepSeq.AddRowsSequenceAsync(seq0,
+                    new int[] { 0, 1, 2, 3, 4, 5 },
+                    new int[] { 2, 2, 3, 3, 4, 4 });
+                await sparseMatrixRepSeq.PrintRowsFromSequences();
+
+                double[] seq1 = new double[] { -1, -2, -3 };
+                var tuple1 = await sparseMatrixRepSeq.AddRowsSequenceAsync(seq1,
+                    new int[] { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 },
+                    new int[] { 0, 1, 2, 3, 4, 5, 6, 7,  8,  9 });
+                await sparseMatrixRepSeq.PrintRowsFromSequences();
+            }
+            Console.WriteLine("---Successful end of method---");
+        }
+
+        /// <summary>
+        /// 7. Работа с ленточными последовательностями элементов
+        /// </summary>
+        private static async Task DataSequencesBandTests()
+        {
+            using (SparseMatrixRepSeq sparseMatrixRepSeq = new SparseMatrixRepSeq("7"))
+            {
+                await sparseMatrixRepSeq.ClearAsync();
+
+                Console.WriteLine(sparseMatrixRepSeq.GetNumSequences());
+                // Объявляем последовательности элементов
+                double[] seq0 = new double[] { -5.55, 0, 15, 211, 0.09 };
+                double[] seq1 = new double[] { 1.1, 2.2, -0.6 };
+                double[] seq2 = new double[] { 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+                double[] seq3 = new double[] { 1000, 0, 15, 211, 0.09 };
+                double[] seq4 = new double[] { -4.55, 4, 45, 411, 4.09, 43.98, 4, -4, -44.432 };
+                #region Добавление последовательностей
+                Console.WriteLine("Добавление последовательности double[] seq0 = new double[] { -5.55, 0, 15, 211, 0.09 };");
+                int seqIndex0 = await sparseMatrixRepSeq.AddSequence(seq0);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+
+                Console.WriteLine("Добавление последовательности double[] seq1 = new double[] { 1.1, 2.2, -0.6 };");
+                int seqIndex1 = await sparseMatrixRepSeq.AddSequence(seq1);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+
+                Console.WriteLine("Добавление последовательности double[] seq2 = new double[] { 9, 8, 7, 6, 5, 4, 3, 2, 1 };");
+                int seqIndex2 = await sparseMatrixRepSeq.AddSequence(seq2);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+
+                Console.WriteLine("Добавление последовательности double[] seq3 = new double[] { 1000, 0, 15, 211, 0.09 };");
+                int seqIndex3 = await sparseMatrixRepSeq.AddSequence(seq3);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+
+                Console.WriteLine("Добавление последовательности double[] seq4 = new double[] { -4.55, 4, 45, 411, 4.09, 43.98, 4, -4, -44.432 };");
+                int seqIndex4 = await sparseMatrixRepSeq.AddSequence(seq4);
+                await sparseMatrixRepSeq.PrintMatrixSequenceIndexFile();
+                await sparseMatrixRepSeq.PrintMatrixSequenceDataFile();
+                #endregion
+
+                #region Добавление координат размещения первых элементов последовательностей
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceBandCoord(seqIndex0, 0, 5, 2)");
+                int sequenceCoordIndex0 = await sparseMatrixRepSeq.AddSequenceBandCoord(seqIndex0, 0, 5, 2);
+                await sparseMatrixRepSeq.PrintMatrixSequenceBandCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceBandCoord(seqIndex1, 2, 5, 2)");
+                int sequenceCoordIndex1 = await sparseMatrixRepSeq.AddSequenceBandCoord(seqIndex1, 2, 5, 2);
+                await sparseMatrixRepSeq.PrintMatrixSequenceBandCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceBandCoord(seqIndex2, 4, 5, 2)");
+                int sequenceCoordIndex2 = await sparseMatrixRepSeq.AddSequenceBandCoord(seqIndex2, 4, 5, 2);
+                await sparseMatrixRepSeq.PrintMatrixSequenceBandCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceBandCoord(seqIndex3, 6, 5, 2)");
+                int sequenceCoordIndex3 = await sparseMatrixRepSeq.AddSequenceBandCoord(seqIndex3, 6, 5, 2);
+                await sparseMatrixRepSeq.PrintMatrixSequenceBandCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceBandCoord(seqIndex4, 8, 5, 2)");
+                int sequenceCoordIndex4_1 = await sparseMatrixRepSeq.AddSequenceBandCoord(seqIndex4, 8, 5, 2);
+                await sparseMatrixRepSeq.PrintMatrixSequenceBandCoordinatesFile();
+                Console.WriteLine("Добавление координаты размещения последовательности AddSequenceBandCoord(seqIndex4, 10, 6, 2)");
+                int sequenceCoordIndex4_2 = await sparseMatrixRepSeq.AddSequenceBandCoord(seqIndex4, 10, 6, 2);
+                await sparseMatrixRepSeq.PrintMatrixSequenceBandCoordinatesFile();
+                #endregion
+
+                await sparseMatrixRepSeq.SetNumColsAsync(20);
+
+                #region Запрос строк из последовательностей
+                Console.WriteLine("Запрос строки 0");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(0);
+                Console.WriteLine("Запрос строки 1");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(1);
+                Console.WriteLine("Запрос строки 2");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(2);
+                Console.WriteLine("Запрос строки 3");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(3);
+                Console.WriteLine("Запрос строки 4");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(4);
+                Console.WriteLine("Запрос строки 5");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(5);
+                Console.WriteLine("Запрос строки 6");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(6);
+                Console.WriteLine("Запрос строки 7");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(7);
+                Console.WriteLine("Запрос строки 8");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(8);
+                Console.WriteLine("Запрос строки 9");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(9);
+                Console.WriteLine("Запрос строки 10");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(10);
+                Console.WriteLine("Запрос строки 11");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(11);
+                Console.WriteLine("Запрос несуществующей строки 12");
+                await sparseMatrixRepSeq.PrintRowFromSequenceBand(12);
+                #endregion
+
+
+            }
+            Console.WriteLine("---Successful end of method---");
+        }
+
+        /// <summary>
+        /// 8. Добавление ленточных последовательностей элементов в массив
+        /// </summary>
+        private static async Task DataSequenceBandAddRowsTests()
+        {
+            using (SparseMatrixRepSeq sparseMatrixRepSeq = new SparseMatrixRepSeq("8"))
+            {
+                await sparseMatrixRepSeq.ClearAsync();
+                double[] seq0 = new double[] { -5.55, 0, 15, 211, 0.09 };
+                var tuple0 = await sparseMatrixRepSeq.AddRowsSequenceBandAsync(seq0,
+                    5, 2, 15);
+                await sparseMatrixRepSeq.PrintRowsFromSequencesBand();
+                                
+            }
+            Console.WriteLine("---Successful end of method---");
+        }
+
+        /// <summary>
+        /// 9. Создание комбинированной матрицы
+        /// </summary>
+        private static async Task SparseMatrixRepSeqCreateAndReadTests()
+        {
+            using (SparseMatrixRepSeq sparseMatrixRepSeq = new SparseMatrixRepSeq("9"))
+            {
+                await sparseMatrixRepSeq.ClearAsync();
+
+                await sparseMatrixRepSeq.AddRowAsync(new double[] { 0.11, 1.11, 2.22, 0, 0, -5.55, 0, 0, -8.88, -9.99 });
+                await sparseMatrixRepSeq.PrintMatrix();
+                Console.WriteLine("-------------------\n");
+                double[] seq0 = new double[] { -5.55, 0, 15, 211, 0.09 };
+                var tuple0 = await sparseMatrixRepSeq.AddRowsSequenceBandAsync(seq0,
+                    5, 2, 15);
+                await sparseMatrixRepSeq.PrintMatrix();
+                Console.WriteLine("-------------------\n");
+                double[] seq1 = new double[] { -1, -2, -3 };
+                var tuple1 = await sparseMatrixRepSeq.AddRowsSequenceAsync(seq1,
+                    new int[] { 1, 2 },
+                    new int[] { 1, 1 });
+                await sparseMatrixRepSeq.PrintMatrix();               
+                
+            }
+            Console.WriteLine("---Successful end of method---");
+        }
+
+        /// <summary>
+        /// 10. Создание СЛАУ
+        /// </summary>
+        /// <returns></returns>
+        private static async Task SlaeCreateAndReadTests()
+        {
+            using (SLAE slae = new SLAE("10"))
+            {
+                await slae.ClearAsync();
+
+                await slae.SparseMatrixRepSeq.AddRowAsync(new double[] { 0.11, 1.11, 2.22, 0, 0, -5.55, 0, 0, -8.88, -9.99 });
+                await slae.SparseMatrixRepSeq.AddRowAsync(new double[] { 4, 0, 2, 0, 0, -5, 0, 0, -9, -10 });
+                await slae.SparseMatrixRepSeq.AddRowAsync(new double[] { 2, 1, 0, 0, 0, -6, 0, 0, -4, -20 });
+                await slae.SparseMatrixRepSeq.AddRowAsync(new double[] { 1, 0, 8, 0, 0, -5, 0, 0, -1, -30 });
+                await slae.SparseMatrixRepSeq.PrintMatrix();
+                Console.WriteLine("-------------------\n");
+                double[] seq0 = new double[] { -5.55, 0, 15, 211, 0.09 };
+                var tuple0 = await slae.SparseMatrixRepSeq.AddRowsSequenceBandAsync(seq0,
+                    4, 0, 11);
+                await slae.SparseMatrixRepSeq.PrintMatrix();
+                Console.WriteLine("-------------------\n");
+                double[] seq1 = new double[] { -1, -2, -3 };
+                var tuple1 = await slae.SparseMatrixRepSeq.AddRowsSequenceAsync(seq1,
+                    new int[] { 5, 6 },
+                    new int[] { 2, 1 });
+                await slae.SparseMatrixRepSeq.PrintMatrix();
+
+                try
+                {
+                    await slae.SetRightSideAsync(new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
+                    await slae.PrintRightSide();
+
+                    try
+                    {
+                        long elapsedTime = await slae.SolveCuda();
+                        Console.WriteLine($"Время решения СЛАУ: {elapsedTime} мс");
+                    }
+                    catch (Exception exc)
+                    {
+                        Console.WriteLine(exc.Message);
+                    }
+
+                    await slae.PrintResult();
+                }
+                catch(Exception exc)
+                {
+                    Console.WriteLine(exc.Message);
+                }
+                
+            }
+            Console.WriteLine("---Successful end of method---");
+        }        
+
+        /// <summary>
+        /// Тестовый запрос на выборку отдельного элемента массива с выводом информации в консоль
+        /// </summary>
+        /// <param name="sparseMatrixRepSeq"></param>
+        /// <param name="rowIndex"></param>
+        /// <param name="colIndex"></param>
+        /// <returns></returns>
+        private static async Task<double> GetElementAsyncTest(SparseMatrixRepSeq sparseMatrixRepSeq, int rowIndex, int colIndex)
+        {
+            double element = 0;
+            try
+            {
+                element = await sparseMatrixRepSeq.GetElementAsync(rowIndex, colIndex);
+                Console.WriteLine($"[{rowIndex}, {colIndex}] = {element}");
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
+
+            return element;
+        }
+
+        /// <summary>
+        /// Создание тестовой матрицы
+        /// </summary>
+        /// <param name="sparseMatrixRepSeq"></param>
+        /// <returns></returns>
+        private static async Task CreateTestMatrix(SparseMatrixRepSeq sparseMatrixRepSeq)
+        {
+            // Очистка матрицы
+            await sparseMatrixRepSeq.ClearAsync();
+
+            // Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+            Console.WriteLine("Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |");
+            // Добавление строки index:              0    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+            //                   value:              0    | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+            await sparseMatrixRepSeq.AddRowAsync(new double[] { 0 }, 0);
+            
+            // Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+            Console.WriteLine("Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |");
+            // Добавление строки index:              0    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+            //                   value:              0    | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+            await sparseMatrixRepSeq.AddRowAsync(new double[] { 0 }, 5);
+            
+            // Добавление строки  | 0.11 | 1.11 | 2.22 | 0 | 0 | -5.55 | 0 | 0 | -8.88 | -9.99 |
+            Console.WriteLine("Добавление строки  | 0.11 | 1.11 | 2.22 | 0 | 0 | -5.55 | 0 | 0 | -8.88 | -9.99 |");
+            // Добавление строки index:              0    | 1    | 2    | 3 | 4 |  5    | 6 | 7 |  8    |  9    |
+            //                   value:              0.11 | 1.11 | 2.22 | 0 | 0 | -5.55 | 0 | 0 | -8.88 | -9.99 |
+            await sparseMatrixRepSeq.AddRowAsync(new double[] { 0.11, 1.11, 2.22, 0, 0, -5.55, 0, 0, -8.88, -9.99 });
+            
+            // Добавление строки  | 0 | 0 | 2.55 | 0 | -1000 | 0 | 50.0001 | 0 | 0 | 0 |
+            Console.WriteLine("Добавление строки  | 0 | 0 | 2.55 | 0 | -1000 | 0 | 50.01 | 0 | 0 | 0 |");
+            // Добавление строки index:              0    | 1    | 2    | 3 | 4     | 5   |       6 | 7 | 8 | 9 |
+            //                   value:              0    | 0    | 2.55 | 0 | -1000 | 0   | 50.01 | 0 | 0 | 0 |
+            await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 0, 2.55, 0, -1000, 0, 50.01, 0, 0, 0 });
+            
+
+            // Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+            Console.WriteLine("Добавление строки  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |");
+            // Добавление строки index:              0    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+            //                   value:              0    | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+            await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+            
+
+
+            // Добавление строки  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+            Console.WriteLine("Добавление строки  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |");
+            // Добавление строки index:              | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+            //                   value:              | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+            await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
+
+            // Добавление строки  | 0 | 1 | 2  |
+            Console.WriteLine("Добавление строки  | 0 | 1 | 2  |");
+            // Добавление строки index:              | 0 | 1 | 2 |
+            //                   value:              | 0 | 1 | 2 |
+            await sparseMatrixRepSeq.AddRowAsync(new double[] { 0, 1, 2 }, 5);
+
+            // Добавление строки  | 0 |
+            Console.WriteLine("Добавление строки  | 0 |");
+            // Добавление строки index:              | 0 |
+            //                   value:              | 0 |
+            await sparseMatrixRepSeq.AddRowAsync(new double[] { 0 });
+
+            await sparseMatrixRepSeq.PrintMatrixDescription();
+            await sparseMatrixRepSeq.PrintRowsFromNnzSeparateElements();
+            Console.WriteLine();
+        }
     }
 }

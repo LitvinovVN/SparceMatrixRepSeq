@@ -48,6 +48,17 @@ namespace SparseMatrixRepSeqNamespace
             int result = Converters.ConvertByteArrayToInt(bytes);
             return result;
         }
+
+        /// <summary>
+        /// Считывает все данные из указанного файла
+        /// </summary>        
+        /// <returns></returns>
+        public new async Task<int[]> ReadAsync()
+        {
+            var bytes = await base.ReadAsync();
+            int[] result = Converters.ConvertByteArrayToIntArray(bytes);
+            return result;
+        }
         #endregion
 
         #region Добавление данных
